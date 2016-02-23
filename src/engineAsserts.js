@@ -30,12 +30,16 @@ class EngineAsserts {
     }
 
 
-    _fillVersions () {
+    _fillVersions (dirPath) {
+        if (!dirPath) {
+            dirPath = process.cwd();
+        }
+
         let packageJson;
         let nvmrc;
 
-        const packageJsonPath = path.join(process.cwd(), 'package.json');
-        const nvmrcPath = path.join(process.cwd(), '.nvmrc');
+        const packageJsonPath = path.join(dirPath, 'package.json');
+        const nvmrcPath = path.join(dirPath, '.nvmrc');
 
         try {
             nvmrc = fs.readFileSync(nvmrcPath, 'utf8').trim();
@@ -50,12 +54,12 @@ class EngineAsserts {
             return;
         }
 
-        if (nvmrc && semver.satisfies(nvmrc)) {
-            this.nodeVersion = semver.clean(nvmrc);
+        if (nvmrc && semver.valid(nvmrc)) {
+            this.nodeVersion = nvmrc;
             this._log.info('Version of Node loaded from .nvmrc');
 
-        } else if (packageJson.engines && packageJson.engines.node && semver.satisfies(packageJson.engines.node)) {
-            this.nodeVersion = semver.clean(packageJson.engines.node);
+        } else if (packageJson.engines && packageJson.engines.node && semver.valid(packageJson.engines.node)) {
+            this.nodeVersion = packageJson.engines.node;
             this._log.info('Version of Node loaded from Package.json');
 
         } else {
@@ -63,8 +67,8 @@ class EngineAsserts {
             return;
         }
 
-        if (packageJson.engines && packageJson.engines.mongodb && semver.satisfies(packageJson.engines.mongodb)) {
-            this.dbVersion = semver.clean(packageJson.engines.mongodb);
+        if (packageJson.engines && packageJson.engines.mongodb && semver.valid(packageJson.engines.mongodb)) {
+            this.dbVersion = packageJson.engines.mongodb;
             this._log.info('Version of Mongodb loaded from Package.json');
         }
     }
@@ -75,19 +79,14 @@ class EngineAsserts {
      */
     checkNodeVersion (justWarn) {
 
-        let version = this._getEnvironmentNodeVersion();
-        let nodeVersion = this.nodeVersion;
+        const envVersion = this._getEnvironmentNodeVersion();
+        const packVersion = this.nodeVersion;
 
-        nodeVersion = nodeVersion;
-        version = version;
-
-        const versionMatches = version === nodeVersion;
-
-        if (versionMatches) {
+        if (semver.satisfies(envVersion, packVersion)) {
             return true;
         }
 
-        const versionErrorMessage = this._errorMessage('Node', version, this.nodeVersion);
+        const versionErrorMessage = this._errorMessage('Node', envVersion, packVersion);
 
         if (!justWarn) {
             this._log.error(versionErrorMessage);
@@ -119,15 +118,16 @@ class EngineAsserts {
 
         this._getEnvironmentMongoVersion(db)
             .then((info) => {
-                const version = info.version;
-                const versionMatches = this.dbVersion === version;
+                const envVersion = info.version;
+                const packVersion = this.dbVersion;
 
-                if (versionMatches) {
+
+                if (semver.satisfies(envVersion, packVersion)) {
                     dbPromise.resolve(this.SUCCESS_CODE);
                     return;
                 }
 
-                const versionErrorMessage = this._errorMessage('DB', version, this.dbVersion);
+                const versionErrorMessage = this._errorMessage('DB', envVersion, packVersion);
 
                 if (!justWarn) {
                     this._log.error(versionErrorMessage);
