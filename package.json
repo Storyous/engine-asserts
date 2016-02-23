@@ -1,19 +1,33 @@
 {
   "name": "Engine-Asserts",
-  "version": "0.0.1",
-  "private": true,
+  "version": "1.0.0",
+  "description": "Verifier for nodejs and mongdb versions",
+  "keywords": [
+    "version",
+    "verifier",
+    "nodejs",
+    "mongodb",
+    "storyous"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/Storyous/engine-asserts.git"
+  },
+  "bugs": {
+    "url": "git://github.com/Storyous/issues"
+  },
   "scripts": {
-    "start": "node ./bin/www --harmony_rest_parameters",
-    "tests": "node "
+    "test": "node_modules/.bin/mocha -w"
   },
   "engines": {
-    "node": "5.5.0",
+    "node": ">=4.0.0",
     "mongodb": "3.2.1"
   },
   "dependencies": {
     "mongodb": "^2.0.39",
     "npm": "^3.5.2",
-    "q": "^1.4.1"
+    "q": "^1.4.1",
+    "semver": "^5.1.0"
   },
   "devDependencies": {
     "eslint": "^1.10.3",
@@ -23,5 +37,6 @@
     "grunt-contrib-jshint": "^0.11.2",
     "grunt-eslint": "^17.3.1",
     "grunt-mocha-test": "^0.12.7"
-  }
+  },
+  "license": "MIT"
 }

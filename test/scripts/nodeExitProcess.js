@@ -2,10 +2,11 @@
 'use strict';
 
 
-const engineAsserts = require('../../src');
+const EngineAsserts = require('../../src/engineAsserts');
 
-engineAsserts.nodeVersion = '1.0.0';
+const engineAsserts = new EngineAsserts(true);
+engineAsserts.nodeVersion = '1';
 engineAsserts._getEnvironmentNodeVersion = () => {
-    return '2.0.0';
+    return '2';
 };
 engineAsserts.checkNodeVersion(false);

@@ -5,19 +5,19 @@
 const MongoClient = require('mongodb').MongoClient;
 const Q = require('q');
 
-const EngineAsserts = require('../../src');
+const EngineAsserts = require('../../src/engineAsserts');
 
 
 MongoClient.connect('mongodb://127.0.0.1:27017/exampleDb2', function (err, _db) {
     if (err) {
         throw new Error(err);
     }
-
-    EngineAsserts.dbVersion = 1;
-    EngineAsserts._getEnvironmentMongoVersion = () => {
+    const engineAsserts = new EngineAsserts(true);
+    engineAsserts.dbVersion = 1;
+    engineAsserts._getEnvironmentMongoVersion = () => {
         return Q.when({ version: 2 });
     };
 
-    EngineAsserts.checkMongoVersion(_db, false);
+    engineAsserts.checkMongoVersion(_db, false);
 
 });

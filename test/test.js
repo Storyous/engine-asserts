@@ -9,6 +9,7 @@ const describe = mocha.describe;
 const it = mocha.it;
 const assert = require('assert');
 const before = mocha.before;
+const after = mocha.after;
 const MongoClient = require('mongodb').MongoClient;
 const engineAsserts = require('../src');
 const EngineAsserts = require('../src/engineAsserts');
@@ -16,6 +17,42 @@ const childProcess = require('child_process');
 const Q = require('q');
 const path = require('path');
 
+/**
+ *
+ * @param {Boolean} areSame
+ * @returns {EngineAsserts}
+ */
+const forceMongoVersions = (areSame) => {
+    const packageVersion = '1';
+    const envVersion = areSame ? '1' : '2';
+    const newEngineAsserts = new EngineAsserts(true);
+
+    newEngineAsserts.dbVersion = packageVersion;
+    newEngineAsserts._getEnvironmentMongoVersion = () => {
+        return Q.when({ version: envVersion });
+    };
+
+    return newEngineAsserts;
+
+};
+
+/**
+ *
+ * @param {Boolean} areSame
+ * @returns {EngineAsserts}
+ */
+const forceNodeVersions = (areSame) => {
+    const packageVersion = '1';
+    const envVersion = areSame ? '1' : '2';
+    const newEngineAsserts = new EngineAsserts(true);
+
+    newEngineAsserts.nodeVersion = packageVersion;
+    newEngineAsserts._getEnvironmentNodeVersion = () => {
+        return envVersion;
+    };
+
+    return newEngineAsserts;
+};
 
 describe('engine asserts', () => {
 
@@ -32,40 +69,21 @@ describe('engine asserts', () => {
         });
     });
 
-
     describe('Check Node version', () => {
 
         it('Should return true. Version matches. [ justWarn === true ]', () => {
-            const version = '1.0.0';
-            const newEngineAsserts = new EngineAsserts();
-
-            newEngineAsserts.nodeVersion = version;
-            newEngineAsserts._getEnvironmentNodeVersion = () => {
-                return version;
-            };
+            const newEngineAsserts = forceNodeVersions(true);
             assert.equal(newEngineAsserts.checkNodeVersion(true), true);
         });
 
         it('Should return true. Version matches. [ justWarn === false ]', () => {
-            const version = '1.0.0';
-            const newEngineAsserts = new EngineAsserts();
-
-            newEngineAsserts.nodeVersion = version;
-            newEngineAsserts._getEnvironmentNodeVersion = () => {
-                return version;
-            };
+            const newEngineAsserts = forceNodeVersions(true);
             assert.equal(newEngineAsserts.checkNodeVersion(false), true);
         });
 
         it('Should return true. Version does not match [ justWarn === true ]', () => {
-            const version = '1.0.0';
-            const newEngineAsserts = new EngineAsserts();
-
-            newEngineAsserts.nodeVersion = version;
-            newEngineAsserts._getEnvironmentNodeVersion = () => {
-                return version;
-            };
-            assert.equal(newEngineAsserts.checkNodeVersion(true), true);
+            const newEngineAsserts = forceNodeVersions(false);
+            assert.equal(newEngineAsserts.checkNodeVersion(true), false);
         });
 
 
@@ -103,15 +121,7 @@ describe('engine asserts', () => {
     describe('Check Mongo versions', () => {
 
         it('Should return code: ' + engineAsserts.SUCCESS_CODE + '. Version matches [ justWarn === true ]', () => {
-
-            const version = '1.0.0';
-            const newEngineAsserts = new EngineAsserts();
-
-            newEngineAsserts.dbVersion = version;
-            newEngineAsserts._getEnvironmentMongoVersion = () => {
-                return Q.when({ version });
-            };
-
+            const newEngineAsserts = forceMongoVersions(true);
             return newEngineAsserts.checkMongoVersion(db, true)
                 .then(function (code) {
                     assert.equal(code, newEngineAsserts.SUCCESS_CODE);
@@ -119,16 +129,8 @@ describe('engine asserts', () => {
         });
 
         it('Should return code: ' + engineAsserts.SUCCESS_CODE + '. Version matches [ justWarn === false ]', () => {
-
-            const version = '1.0.0';
-            const newEngineAsserts = new EngineAsserts();
-
-            newEngineAsserts.dbVersion = version;
-            newEngineAsserts._getEnvironmentMongoVersion = () => {
-                return Q.when({ version });
-            };
-
-            return newEngineAsserts.checkMongoVersion(db, true)
+            const newEngineAsserts = forceMongoVersions(true);
+            return newEngineAsserts.checkMongoVersion(db, false)
                 .then(function (code) {
                     assert.equal(code, newEngineAsserts.SUCCESS_CODE);
                 });
@@ -166,13 +168,19 @@ describe('engine asserts', () => {
 
         it('Should return code ' + engineAsserts.WARN_TRUE_ERROR_CODE + '. Version does not match [ justWarn === true ]', () => {
 
-            return engineAsserts.checkMongoVersion(db, true)
+            const newEngineAsserts = new EngineAsserts(true);
+            newEngineAsserts.dbVersion = '1.0.0';
+            newEngineAsserts._getEnvironmentMongoVersion = () => {
+                return Q.when({ version: '2.0.0' });
+            };
+
+            return newEngineAsserts.checkMongoVersion(db, true)
                 .then(function (res) {
                     assert.ok(res, 'should return exception!');
                 })
                 .catch(function (code) {
                     assert.ok(code);
-                    assert.equal(code, engineAsserts.WARN_TRUE_ERROR_CODE, 'Wrong exit code!');
+                    assert.equal(code, newEngineAsserts.WARN_TRUE_ERROR_CODE, 'Wrong exit code!');
                 });
 
         });
