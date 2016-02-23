@@ -39,8 +39,10 @@ class EngineAsserts {
             return;
         }
 
-        this.WARN_FALSE_ERROR_CODE = 50;
+        this.SUCCESS_CODE = 30;
         this.WARN_TRUE_ERROR_CODE = 40;
+        this.WARN_FALSE_ERROR_CODE = 50;
+
         this.nodeVersion = packagejson.engines.node;
         this.dbVersion = packagejson.engines.mongodb;
 
@@ -52,6 +54,34 @@ class EngineAsserts {
      */
     checkNodeVersion (justWarn) {
 
+        const req = /v/g;
+
+        let version = this._getEnvironmentNodeVersion();
+        let nodeVersion = this.nodeVersion;
+
+        nodeVersion = nodeVersion.replace(req, '');
+        version = version.replace(req, '');
+
+        const versionMatches = version === nodeVersion;
+
+        if (versionMatches) {
+            return true;
+        }
+
+        const versionErrorMessage = '' +
+            '\n==============================' +
+            '\n Package.json Node Version:   ' + this.nodeVersion +
+            '\n Enviroment Node Version:     ' + version +
+            '\n==============================';
+
+        if (!justWarn) {
+            console.error(versionErrorMessage);
+            process.exit(this.WARN_FALSE_ERROR_CODE);
+            return false;
+        }
+
+        console.warn(versionErrorMessage);
+        return false;
 
     }
 
@@ -69,33 +99,30 @@ class EngineAsserts {
             dbPromise.reject('db is not instance of Mongodb.Db');
         }
 
-        this._getCurrentMongoVersion(db)
+        this._getEnvironmentMongoVersion(db)
             .then((info) => {
-
                 const version = info.version;
-                const versionsMatches = this.dbVersion === version;
+                const versionMatches = this.dbVersion === version;
 
-                if (versionsMatches) {
-                    dbPromise.resolve(true);
-
-                } else {
-
-                    const versionErrorMessage = '' +
-                       '\n==============================' +
-                       '\n DB Version: ' + this.dbVersion +
-                       '\n App DB Version: ' + version +
-                       '\n==============================';
-
-                    if (!justWarn) {
-                        console.error(versionErrorMessage);
-                        process.exit(this.WARN_FALSE_ERROR_CODE);
-                        return;
-                    }
-
-                    console.warn(versionErrorMessage);
-                    dbPromise.reject(this.WARN_TRUE_ERROR_CODE);
-
+                if (versionMatches) {
+                    dbPromise.resolve(this.SUCCESS_CODE);
+                    return;
                 }
+
+                const versionErrorMessage = '' +
+                   '\n==============================' +
+                   '\n Package.json DB Version:   ' + this.dbVersion +
+                   '\n Enviroment DB Version:     ' + version +
+                   '\n==============================';
+
+                if (!justWarn) {
+                    console.error(versionErrorMessage);
+                    process.exit(this.WARN_FALSE_ERROR_CODE);
+                    return;
+                }
+
+                console.warn(versionErrorMessage);
+                dbPromise.reject(this.WARN_TRUE_ERROR_CODE);
 
             })
             .catch(function (err) {
@@ -111,7 +138,7 @@ class EngineAsserts {
      * @returns {Q.Promise}
      * @private
      */
-    _getCurrentMongoVersion (db) {
+    _getEnvironmentMongoVersion (db) {
 
         const def = Q.defer();
         const admin = new mongodb.Admin(db);
@@ -119,6 +146,15 @@ class EngineAsserts {
         admin.serverStatus(def.makeNodeResolver());
 
         return def.promise;
+    }
+
+    /**
+     *
+     * @returns {String}
+     * @private
+     */
+    _getEnvironmentNodeVersion () {
+        return process.version;
     }
 
 

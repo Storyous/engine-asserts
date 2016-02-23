@@ -2,17 +2,22 @@
 'use strict';
 
 
-const engineAsserts = require('../../src');
-
 const MongoClient = require('mongodb').MongoClient;
+const Q = require('q');
+
+const EngineAsserts = require('../../src');
+
 
 MongoClient.connect('mongodb://127.0.0.1:27017/exampleDb2', function (err, _db) {
     if (err) {
         throw new Error(err);
     }
 
-    // engineAsserts._dbVersion = 1;
+    EngineAsserts.dbVersion = 1;
+    EngineAsserts._getEnvironmentMongoVersion = () => {
+        return Q.when({ version: 2 });
+    };
 
-    engineAsserts.checkMongoVersion(_db, false);
+    EngineAsserts.checkMongoVersion(_db, false);
 
 });

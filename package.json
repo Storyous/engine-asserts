@@ -1,0 +1,27 @@
+{
+  "name": "Engine-Asserts",
+  "version": "0.0.1",
+  "private": true,
+  "scripts": {
+    "start": "node ./bin/www --harmony_rest_parameters",
+    "tests": "node "
+  },
+  "engines": {
+    "node": "5.5.0",
+    "mongodb": "3.2.1"
+  },
+  "dependencies": {
+    "mongodb": "^2.0.39",
+    "npm": "^3.5.2",
+    "q": "^1.4.1"
+  },
+  "devDependencies": {
+    "eslint": "^1.10.3",
+    "eslint-config-airbnb": "^2.1.1",
+    "mocha": "~2.2.5",
+    "grunt": "^0.4.5",
+    "grunt-contrib-jshint": "^0.11.2",
+    "grunt-eslint": "^17.3.1",
+    "grunt-mocha-test": "^0.12.7"
+  }
+}
