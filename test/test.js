@@ -69,6 +69,8 @@ describe('engine asserts', () => {
         });
     });
 
+    // @todo tests for packajson nvmrc lodad
+    
     describe('Check Node version', () => {
 
         it('Should return true. Version matches. [ justWarn === true ]', () => {
