@@ -3,4 +3,9 @@
 
 const EngineAsserts = require('./engineAsserts');
 
-module.exports = new EngineAsserts();
+const newEngineAsserts = function (cfg) {
+    return new EngineAsserts(cfg);
+};
+
+module.exports = newEngineAsserts;
+

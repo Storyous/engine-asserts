@@ -15,31 +15,50 @@ const Logger = require('./logger');
 
 class EngineAsserts {
 
-    constructor (disableConsole) {
+    /**
+     *
+     * @param {Object} [cfg]
+     * @param {Boolean} [cfg.consoleDisabled]
+     * @param {String} [cfg.rootPath] path to directory with package json and nvmrc files
+     */
+    constructor (cfg) {
+
+        const logCfg = cfg && cfg.consoleDisabled ? cfg.consoleDisabled : null;
+        const rootPath = cfg && cfg.rootPath ? cfg.rootPath : null;
+
+        this.SUCCESS_MONGO_LOADED_MSG = 'Version of Mongodb loaded from Package.json';
+        this.SUCCESS_PACKAGE_NODE_LOADED_MSG = 'Version of Node loaded from Package.json';
+        this.SUCCESS_NVMRC_NODE_LOADED_MSG = 'Version of Node loaded from .nvmrc';
+        this.ERROR_NODE_LOADED_MSG = 'Version of Node not loaded! Please declare it in "engines.node" in package.json or in .nvmrc';
+        this.ERROR_PACKAGE_NVMRC_MISSING_MSG = 'Neither Package.json nor nvmrc files are missing or there is not node version specified!';
 
         this.SUCCESS_CODE = 30;
         this.WARN_TRUE_ERROR_CODE = 40;
         this.WARN_FALSE_ERROR_CODE = 50;
         this.nodeVersion = null;
         this.dbVersion = null;
+        this._log = new Logger(logCfg);
 
-        this._log = new Logger(disableConsole);
-
-        this._fillVersions();
+        this._fillVersions(rootPath);
 
     }
 
+    /**
+     *
+     * @param {String} [rootPath]
+     * @private
+     */
+    _fillVersions (rootPath) {
 
-    _fillVersions (dirPath) {
-        if (!dirPath) {
-            dirPath = process.cwd();
+        if (!rootPath) {
+            rootPath = process.cwd();
         }
 
         let packageJson;
         let nvmrc;
 
-        const packageJsonPath = path.join(dirPath, 'package.json');
-        const nvmrcPath = path.join(dirPath, '.nvmrc');
+        const packageJsonPath = path.join(rootPath, 'package.json');
+        const nvmrcPath = path.join(rootPath, '.nvmrc');
 
         try {
             nvmrc = fs.readFileSync(nvmrcPath, 'utf8').trim();
@@ -50,26 +69,26 @@ class EngineAsserts {
         try {
             packageJson = JSON.parse(fs.readFileSync(packageJsonPath, 'utf8'));
         } catch (err) {
-            this._log.error('Neither Package.json nor nvmrc files are missing!');
+            this._log.error(this.ERROR_PACKAGE_NVMRC_MISSING_MSG);
             return;
         }
 
         if (nvmrc && semver.valid(nvmrc)) {
             this.nodeVersion = nvmrc;
-            this._log.info('Version of Node loaded from .nvmrc');
+            this._log.info(this.SUCCESS_NVMRC_NODE_LOADED_MSG);
 
         } else if (packageJson.engines && packageJson.engines.node && semver.valid(packageJson.engines.node)) {
             this.nodeVersion = packageJson.engines.node;
-            this._log.info('Version of Node loaded from Package.json');
+            this._log.info(this.SUCCESS_PACKAGE_NODE_LOADED_MSG);
 
         } else {
-            this._log.info('Version of Node loaded from Package.json');
+            this._log.error(this.ERROR_NODE_LOADED_MSG);
             return;
         }
 
         if (packageJson.engines && packageJson.engines.mongodb && semver.valid(packageJson.engines.mongodb)) {
             this.dbVersion = packageJson.engines.mongodb;
-            this._log.info('Version of Mongodb loaded from Package.json');
+            this._log.info(this.SUCCESS_MONGO_LOADED_MSG);
         }
     }
 

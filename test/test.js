@@ -10,12 +10,11 @@ const it = mocha.it;
 const assert = require('assert');
 const before = mocha.before;
 const MongoClient = require('mongodb').MongoClient;
-const engineAsserts = require('../src');
 const EngineAsserts = require('../src/engineAsserts');
+const engineAsserts = require('../src')({ consoleDisabled: true });
 const childProcess = require('child_process');
 const Q = require('q');
 const path = require('path');
-
 /**
  *
  * @param {String} [envVersion]
@@ -24,7 +23,7 @@ const path = require('path');
  */
 const forceMongoVersions = (envVersion, packVersion) => {
 
-    const newEngineAsserts = new EngineAsserts(true);
+    const newEngineAsserts = new EngineAsserts({ consoleDisabled: true });
 
     newEngineAsserts.dbVersion = packVersion;
     newEngineAsserts._getEnvironmentMongoVersion = () => {
@@ -44,7 +43,7 @@ const forceMongoVersions = (envVersion, packVersion) => {
  */
 const forceNodeVersions = (envVersion, packVersion) => {
 
-    const newEngineAsserts = new EngineAsserts(true);
+    const newEngineAsserts = new EngineAsserts({ consoleDisabled: true });
 
     newEngineAsserts.nodeVersion = packVersion;
     newEngineAsserts._getEnvironmentNodeVersion = () => {
@@ -58,6 +57,7 @@ describe('engine asserts', () => {
 
     let db;
 
+
     before(function (done) {
         MongoClient.connect('mongodb://127.0.0.1:27017/exampleDb', function (err, _db) {
             if (err) {
@@ -69,19 +69,82 @@ describe('engine asserts', () => {
         });
     });
 
-    // @todo tests for filler
-    /*
-   describe('Check version filler', () => {
 
-        it('Version 1.2.3 should matches  1.x || >=2.5.0 || 5.0.0 - 7.2.3', () => {
-            const newEngineAsserts = new EngineAsserts();
-            newEngineAsserts._fillVersions(path.resolve(__dirname, 'assets'));
+    describe('Check version filler', () => {
+
+        it('Should get node version from .nvmrc and mongo verion from package.json', () => {
+
+            const defProcess = Q.defer();
+            const filepath = path.join(process.cwd(), 'test/scripts/filler1.js');
+
+            childProcess.execFile(process.execPath, [filepath], function (error, stdout) {
+                defProcess.resolve(stdout);
+            });
+
+            return defProcess.promise
+                .then(function (stdout) {
+                    assert.ok(
+                        stdout.indexOf(engineAsserts.SUCCESS_MONGO_LOADED_MSG) >= 0 &&
+                        stdout.indexOf(engineAsserts.SUCCESS_NVMRC_NODE_LOADED_MSG) >= 0
+                    );
+                });
+
+        });
+
+        it('Should return error message that .nvmrc and package.json is missing', () => {
+
+            const defProcess = Q.defer();
+            const filepath = path.join(process.cwd(), 'test/scripts/filler2.js');
+
+            childProcess.execFile(process.execPath, [filepath], function (error, stdout, stderr) {
+                defProcess.resolve(stderr);
+            });
+
+            return defProcess.promise
+                .then(function (stderr) {
+                    assert.ok(stderr.indexOf(engineAsserts.ERROR_PACKAGE_NVMRC_MISSING_MSG) >= 0);
+                });
+
+        });
+
+        it('Should return message that node and mongo is loaded form package.json', () => {
+
+            const defProcess = Q.defer();
+            const filepath = path.join(process.cwd(), 'test/scripts/filler3.js');
+
+            childProcess.execFile(process.execPath, [filepath], function (error, stdout) {
+                defProcess.resolve(stdout);
+            });
+
+            return defProcess.promise
+                .then(function (stdout) {
+                    assert.ok(
+                        stdout.indexOf(engineAsserts.SUCCESS_PACKAGE_NODE_LOADED_MSG) >= 0 &&
+                        stdout.indexOf(engineAsserts.SUCCESS_MONGO_LOADED_MSG) >= 0
+                    );
+                });
+
+        });
+
+        it('Should return error message that node version is not loaded', () => {
+
+            const defProcess = Q.defer();
+            const filepath = path.join(process.cwd(), 'test/scripts/filler4.js');
+
+            childProcess.execFile(process.execPath, [filepath], function (error, stdout, stderr) {
+                defProcess.resolve(stderr);
+            });
+
+            return defProcess.promise
+                .then(function (stderr) {
+                    assert.ok(stderr.indexOf(engineAsserts.ERROR_NODE_LOADED_MSG) >= 0);
+                });
 
         });
 
     });
-    */
-    
+
+
     describe('Check semantic version comparison', () => {
 
         it('Version 1.2.3 should matches  1.x || >=2.5.0 || 5.0.0 - 7.2.3', () => {
@@ -166,9 +229,9 @@ describe('engine asserts', () => {
         it('Should return code: ' + engineAsserts.WARN_FALSE_ERROR_CODE + '. Version does not match [ justWarn === false ]', () => {
 
             const defProcess = Q.defer();
-            const filepath = path.join(process.cwd(), 'test/scripts/mongoExitProcess.js');
+            const filePath = path.join(process.cwd(), 'test/scripts/mongoExitProcess.js');
 
-            childProcess.execFile(process.execPath, [filepath], function (error) {
+            childProcess.execFile(process.execPath, [filePath], function (error) {
 
                 if (error) {
                     return defProcess.resolve(error);
