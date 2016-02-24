@@ -18,8 +18,8 @@ class EngineAsserts {
     /**
      *
      * @param {Object} [cfg]
-     * @param {Boolean} [cfg.consoleDisabled]
-     * @param {String} [cfg.rootPath] path to directory with package json and nvmrc files
+     * @param {Boolean} [cfg.consoleDisabled]       disable console output (default: false)
+     * @param {String} [cfg.rootPath]               path to package.jsn & .nvmrc directory (default: process.cwd())
      */
     constructor (cfg) {
 
@@ -41,6 +41,10 @@ class EngineAsserts {
 
         this._fillVersions(rootPath);
 
+    }
+
+    _isValidVersion (v) {
+        return semver.valid(v) || semver.validRange(v);
     }
 
     /**
@@ -73,11 +77,11 @@ class EngineAsserts {
             return;
         }
 
-        if (nvmrc && semver.valid(nvmrc)) {
+        if (nvmrc && this._isValidVersion(nvmrc)) {
             this.nodeVersion = nvmrc;
             this._log.info(this.SUCCESS_NVMRC_NODE_LOADED_MSG);
 
-        } else if (packageJson.engines && packageJson.engines.node && semver.valid(packageJson.engines.node)) {
+        } else if (packageJson.engines && packageJson.engines.node && this._isValidVersion(packageJson.engines.node)) {
             this.nodeVersion = packageJson.engines.node;
             this._log.info(this.SUCCESS_PACKAGE_NODE_LOADED_MSG);
 
@@ -86,7 +90,7 @@ class EngineAsserts {
             return;
         }
 
-        if (packageJson.engines && packageJson.engines.mongodb && semver.valid(packageJson.engines.mongodb)) {
+        if (packageJson.engines && packageJson.engines.mongodb  && this._isValidVersion(packageJson.engines.mongodb)) {
             this.dbVersion = packageJson.engines.mongodb;
             this._log.info(this.SUCCESS_MONGO_LOADED_MSG);
         }
@@ -95,6 +99,7 @@ class EngineAsserts {
     /**
      *
      * @param {Boolean} justWarn
+     * @returns {boolean}
      */
     checkNodeVersion (justWarn) {
 

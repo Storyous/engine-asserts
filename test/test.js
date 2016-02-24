@@ -108,7 +108,6 @@ describe('engine asserts', () => {
         });
 
         it('Should return message that node and mongo is loaded form package.json', () => {
-
             const defProcess = Q.defer();
             const filepath = path.join(process.cwd(), 'test/scripts/filler3.js');
 
