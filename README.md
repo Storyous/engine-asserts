@@ -40,10 +40,16 @@ You can then use in your Node apps:
 var engineAsserts = require('engine-asserts')(cfg);
 
 /**
- justWarn === true  ->  displays error in console
- justWarn === false  -> displays error in console and exits process
-*/
+ *
+ * @param {Boolean} justWarn            true - displays error output in console , false - displays error output in console and  * @returns {Boolean}
+ */
 engineAsserts.checkNodeVersion(justWarn); //returns Boolean
+
+/**
+ *
+ * @param {Boolean} justWarn            true - displays error output in console , false - displays error output in console and exits process
+ * @returns {Q.Promise}
+ */
 engineAsserts.checkMongoVersion(justWarn) //returns Promise
 
 ```
@@ -53,3 +59,5 @@ engineAsserts.checkMongoVersion(justWarn) //returns Promise
 ```bash
 $ npm run test
 ```
+
+
