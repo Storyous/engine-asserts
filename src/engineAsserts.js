@@ -38,6 +38,7 @@ class EngineAsserts {
         this.nodeVersion = null;
         this.dbVersion = null;
         this._log = new Logger(logCfg);
+        this._isTest = false;
 
         this._fillVersions(rootPath);
 
@@ -113,11 +114,11 @@ class EngineAsserts {
         const versionErrorMessage = this._errorMessage('Node', envVersion, packVersion);
 
         if (!justWarn) {
-            this._log.error(versionErrorMessage);
+            if (!this._isTest) console.error(versionErrorMessage);
             process.exit(this.WARN_FALSE_ERROR_CODE);
         }
 
-        this._log.warn(versionErrorMessage);
+        if (!this._isTest) console.warn(versionErrorMessage);
         return false;
 
     }
@@ -154,11 +155,11 @@ class EngineAsserts {
                 const versionErrorMessage = this._errorMessage('DB', envVersion, packVersion);
 
                 if (!justWarn) {
-                    this._log.error(versionErrorMessage);
+                    if (!this._isTest) console.error(versionErrorMessage);
                     process.exit(this.WARN_FALSE_ERROR_CODE);
                 }
 
-                this._log.warn(versionErrorMessage);
+                if (!this._isTest) console.warn(versionErrorMessage);
                 dbPromise.reject(this.WARN_TRUE_ERROR_CODE);
 
             })
