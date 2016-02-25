@@ -24,7 +24,7 @@ const path = require('path');
 const forceMongoVersions = (envVersion, packVersion) => {
 
     const newEngineAsserts = new EngineAsserts({ consoleDisabled: true });
-
+    newEngineAsserts._isTest = true;
     newEngineAsserts.dbVersion = packVersion;
     newEngineAsserts._getEnvironmentMongoVersion = () => {
         return Q.when({ version: envVersion });
@@ -44,7 +44,7 @@ const forceMongoVersions = (envVersion, packVersion) => {
 const forceNodeVersions = (envVersion, packVersion) => {
 
     const newEngineAsserts = new EngineAsserts({ consoleDisabled: true });
-
+    newEngineAsserts._isTest = true;
     newEngineAsserts.nodeVersion = packVersion;
     newEngineAsserts._getEnvironmentNodeVersion = () => {
         return envVersion;
