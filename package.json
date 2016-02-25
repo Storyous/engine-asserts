@@ -2,6 +2,7 @@
   "name": "Engine-Asserts",
   "version": "1.0.0",
   "description": "Verifier for nodejs and mongdb versions",
+  "main": "src/index",
   "keywords": [
     "version",
     "verifier",
