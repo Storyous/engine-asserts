@@ -1,6 +1,6 @@
 {
   "name": "engine-asserts",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "Verifier for nodejs and mongdb versions",
   "main": "./src/index.js",
   "keywords": [
@@ -26,7 +26,6 @@
   },
   "dependencies": {
     "mongodb": "^2.0.39",
-    "npm": "^3.5.2",
     "q": "^1.4.1",
     "semver": "^5.1.0"
   },
