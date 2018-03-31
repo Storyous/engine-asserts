@@ -143,7 +143,7 @@ class EngineAsserts {
 
         this._getEnvironmentMongoVersion(db)
             .then((info) => {
-                const envVersion = info.version;
+                const envVersion = info.version.replace(/-.*$/, '');
                 const packVersion = this.dbVersion;
 
 
